@@ -1,8 +1,9 @@
 package io.netfoundry.ziti.sample
 
 import android.os.Bundle
-import android.support.design.widget.Snackbar
-import android.support.v7.app.AppCompatActivity
+import android.os.Handler
+import com.google.android.material.snackbar.Snackbar
+import androidx.appcompat.app.AppCompatActivity
 import android.view.Menu
 import io.netfoundry.ziti.android.Ziti
 import kotlinx.android.synthetic.main.activity_main.*
@@ -30,7 +31,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    fun loadData() = GlobalScope.launch(Dispatchers.IO) {
+    fun loadData() = GlobalScope.async (Dispatchers.IO) {
         val body = async {
             val con = URL(url).openConnection() as HttpURLConnection
             con.addRequestProperty("Host", "wttr.in")
@@ -41,16 +42,20 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        body.invokeOnCompletion { ex ->
-            if (ex != null) {
-                Snackbar.make(fab, ex.localizedMessage, Snackbar.LENGTH_LONG)
-                    .setAction("Dismiss", null).show()
+        try {
+            val text = body.await()
+            result_text.post {
+                result_text.text = text
             }
+        } catch (ex: Exception) {
+            showEx(ex)
         }
+    }
 
-        val text = body.await()
-        result_text.post {
-            result_text.text = text
+    internal fun showEx(ex: Throwable) {
+        Handler(mainLooper).post {
+            Snackbar.make(fab, ex.localizedMessage, Snackbar.LENGTH_LONG)
+                .setAction("Dismiss", null).show()
         }
     }
 
