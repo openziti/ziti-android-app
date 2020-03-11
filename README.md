@@ -24,7 +24,7 @@ This is a simple app that demonstrates the use of Ziti SDK for Android (and Java
   Download enrollment JWT and copy it to the device.
 * Once the app starts it will show notification to let user know that the app has not been enrolled
   ![no-enrollment](doc/no-enrollment.png)
-* Tapping notification allows you to select enrollent token
+* Tapping the notification allows you to select enrollent token
   ![pick-jwt](doc/pick-jwt.png)
 *  If enrollment is successful it shows shows notification on the screen
   ![success](doc/enrollment-success.png)
