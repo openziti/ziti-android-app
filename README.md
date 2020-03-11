@@ -19,13 +19,14 @@ This is a simple app that demonstrates the use of Ziti SDK for Android (and Java
   endpoint port = 80
   endpoint protocol = tcp
   ```
-* Create identity for the device running this. You'll need one identity per device.
+* Create an identity for the device running this. You'll need one identity per device.
   You will need to configure access to the service for your new identity.
   Download enrollment JWT and copy it to the device.
 * Once the app starts it will show notification to let user know that the app has not been enrolled
   ![no-enrollment](doc/no-enrollment.png)
 * Tapping notification allows you to select enrollent token
-  ![pick-jwt](doc/pick-jwt.png). If enrollment is successful if shows notification on the screen
+  ![pick-jwt](doc/pick-jwt.png)
+*  If enrollment is successful it shows shows notification on the screen
   ![success](doc/enrollment-success.png)
 * After that the app can be used -- pushing the message button should load current weather 
   for Charlotte on the screen
