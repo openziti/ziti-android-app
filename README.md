@@ -8,7 +8,7 @@ This is a simple app that demonstrates the use of Ziti SDK for Android (and Java
 
 ## Running the app
 
-* Create Ziti Network following the [guide](https://netfoundry.github.io/ziti-doc/ziti/quickstarts/networks-overview.html)
+* Create Ziti Network following the [guide](https://openziti.github.io/ziti/quickstarts/networks-overview.html)
 * Create weather service that is used by this app:
   ```
   name = ziti-weather-service
