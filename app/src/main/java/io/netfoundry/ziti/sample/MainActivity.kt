@@ -2,54 +2,102 @@ package io.netfoundry.ziti.sample
 
 import android.os.Bundle
 import android.os.Handler
-import com.google.android.material.snackbar.Snackbar
-import androidx.appcompat.app.AppCompatActivity
 import android.view.Menu
-import io.netfoundry.ziti.android.Ziti
+import androidx.appcompat.app.AppCompatActivity
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
-import kotlinx.coroutines.launch
-import java.net.HttpURLConnection
-import java.net.URL
+import okhttp3.*
+import org.openziti.Ziti
+import java.io.IOException
+import java.net.InetAddress
+import java.security.KeyStore
+import java.util.*
+import java.util.concurrent.TimeUnit
+import javax.net.ssl.TrustManagerFactory
+import javax.net.ssl.X509TrustManager
+
 
 class MainActivity : AppCompatActivity() {
 
-    val url = "http://weather.ziti.netfoundry.io/Charlotte?format=3"
+    private var client: OkHttpClient = OkHttpClient()
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        Ziti.init(applicationContext)
+        val ks: KeyStore = KeyStore.getInstance("AndroidKeyStore").apply {
+            load(null)
+        }
+        Ziti.init(ks, false)
+        val tmf: TrustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm())
+
+        tmf.init(ks)
+
+        val tm: X509TrustManager = tmf.trustManagers[0] as X509TrustManager
+
+        class DnsSystem : Dns {
+            override fun lookup(hostname: String): List<InetAddress> {
+                try {
+                    val address: InetAddress? = Ziti.getDNSResolver().resolve(hostname)
+                    if (address == null) {
+                        return arrayListOf<InetAddress>(InetAddress.getByName(hostname))
+                    }
+                    return Collections.singletonList(address)
+                } catch (e: Exception) {
+                    println("Exception: " + e.message)
+                }
+                return Collections.emptyList()
+            }
+        }
+
+        val d = DnsSystem()
+
+        client = client.newBuilder()
+            .socketFactory(Ziti.getSocketFactory())
+            .sslSocketFactory(Ziti.getSSLSocketFactory(), tm)
+            .dns(d)
+            .callTimeout(5, TimeUnit.MINUTES)
+            .build()
 
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
 
-        fab.setOnClickListener { view ->
+        fab.setOnClickListener {
             loadData()
         }
     }
 
-    fun loadData() = GlobalScope.async (Dispatchers.IO) {
-        val body = async {
-            val con = URL(url).openConnection() as HttpURLConnection
-            con.addRequestProperty("Host", "wttr.in")
-            if (con.responseCode > 200) {
-                throw Exception(con.responseMessage)
-            } else {
-                con.inputStream.reader().readText()
-            }
-        }
+    fun loadData() {
+        val request = Request.Builder()
+            .url("http://wttr.ziti")
+            .header("host", "wttr.in")
+            .build()
 
-        try {
-            val text = body.await()
-            result_text.post {
-                result_text.text = text
+        client.newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                e.printStackTrace()
             }
-        } catch (ex: Exception) {
-            showEx(ex)
-        }
+
+            override fun onResponse(call: Call, response: Response) {
+                var body = ""
+                response.use {
+                    if (!response.isSuccessful) throw IOException("Unexpected code $response")
+
+                    for ((name, value) in response.headers) {
+                        println("$name: $value")
+                    }
+
+                    body = response.body!!.string()
+                }
+
+                try {
+                    result_text.post {
+                        result_text.text = body
+                    }
+                } catch (ex: Exception) {
+                    showEx(ex)
+                }
+            }
+        })
     }
 
     internal fun showEx(ex: Throwable) {
