@@ -69,7 +69,8 @@ class MainActivity : AppCompatActivity() {
 
     fun loadData() {
         val request = Request.Builder()
-            .url("http://hello.ziti")
+            .url("http://wttr.ziti")
+            .header("host", "wttr.in")
             .build()
 
         client.newCall(request).enqueue(object : Callback {
