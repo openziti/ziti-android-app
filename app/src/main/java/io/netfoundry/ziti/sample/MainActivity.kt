@@ -27,7 +27,6 @@ class MainActivity : AppCompatActivity() {
             load(null)
         }
         Ziti.init(ks, false)
-        Thread.sleep(1000)
         val tmf: TrustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm())
 
         tmf.init(ks)
