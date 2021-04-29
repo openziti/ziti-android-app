@@ -18,7 +18,7 @@ android {
     defaultConfig {
         applicationId "io.netfoundry.ziti.sample"
         minSdkVersion 27
-        targetSdkVersion 27
+        targetSdkVersion 29
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"

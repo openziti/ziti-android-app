@@ -78,6 +78,7 @@ class MainActivity : AppCompatActivity() {
             }
 
             override fun onResponse(call: Call, response: Response) {
+                var body = ""
                 response.use {
                     if (!response.isSuccessful) throw IOException("Unexpected code $response")
 
@@ -85,13 +86,15 @@ class MainActivity : AppCompatActivity() {
                         println("$name: $value")
                     }
 
-                    try {
-                        result_text.post {
-                            result_text.text = response.body!!.string()
-                        }
-                    } catch (ex: Exception) {
-                        showEx(ex)
+                    body = response.body!!.string()
+                }
+
+                try {
+                    result_text.post {
+                        result_text.text = body
                     }
+                } catch (ex: Exception) {
+                    showEx(ex)
                 }
             }
         })
