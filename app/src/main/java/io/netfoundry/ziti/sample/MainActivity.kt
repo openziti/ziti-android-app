@@ -58,7 +58,7 @@ class MainActivity : AppCompatActivity() {
 
     fun loadData() {
         val request = Request.Builder()
-            .url("http://wttr.ziti")
+            .url("http://wttr.ziti/Rochester?format=3")
             .header("host", "wttr.in")
             .build()
 
