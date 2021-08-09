@@ -2,13 +2,14 @@ package io.netfoundry.ziti.sample
 
 import android.os.Bundle
 import android.os.Handler
+import android.util.Log
 import android.view.Menu
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
 import okhttp3.*
-import org.openziti.Ziti
+import org.openziti.android.Ziti
 import java.io.IOException
 import java.net.InetAddress
 import java.security.KeyStore
@@ -23,26 +24,15 @@ class MainActivity : AppCompatActivity() {
     private var client: OkHttpClient = OkHttpClient()
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        val ks: KeyStore = KeyStore.getInstance("AndroidKeyStore").apply {
-            load(null)
-        }
-        Ziti.init(ks, false)
-        val tmf: TrustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm())
-
-        tmf.init(ks)
-
-        val tm: X509TrustManager = tmf.trustManagers[0] as X509TrustManager
+        Ziti.init(this, false)
 
         class DnsSystem : Dns {
             override fun lookup(hostname: String): List<InetAddress> {
                 try {
-                    val address: InetAddress? = Ziti.getDNSResolver().resolve(hostname)
-                    if (address == null) {
-                        return arrayListOf<InetAddress>(InetAddress.getByName(hostname))
-                    }
-                    return Collections.singletonList(address)
+                    val addr = Ziti.getDnsResolver().resolve(hostname) ?: InetAddress.getByName(hostname)
+                    return listOf(addr)
                 } catch (e: Exception) {
-                    println("Exception: " + e.message)
+                    Log.w("sample", "Exception: " + e.message)
                 }
                 return Collections.emptyList()
             }
@@ -52,7 +42,7 @@ class MainActivity : AppCompatActivity() {
 
         client = client.newBuilder()
             .socketFactory(Ziti.getSocketFactory())
-            .sslSocketFactory(Ziti.getSSLSocketFactory(), tm)
+            .sslSocketFactory(Ziti.getSSLSocketFactory(), getTrustManager())
             .dns(d)
             .callTimeout(5, TimeUnit.MINUTES)
             .build()
@@ -111,5 +101,16 @@ class MainActivity : AppCompatActivity() {
         // Inflate the menu; this adds items to the action bar if it is present.
         menuInflater.inflate(R.menu.menu_main, menu)
         return true
+    }
+
+    private fun getTrustManager(): X509TrustManager {
+        val ks: KeyStore = KeyStore.getInstance("AndroidKeyStore").apply {
+            load(null)
+        }
+        val tmf: TrustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm())
+
+        tmf.init(ks)
+
+        return tmf.trustManagers[0] as X509TrustManager
     }
 }
