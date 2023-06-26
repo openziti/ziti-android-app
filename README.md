@@ -1,24 +1,27 @@
 # Ziti Android Quickstart
 
-This is a simple app that demonstrates the use of Ziti SDK for Android (and Java).
+This is a simple app that demonstrates the use of [the Ziti SDK for Android](https://github.com/openziti/ziti-sdk-android#readme) (Kotlin). You will need the files in [this Git repository](https://github.com/openziti/ziti-android-app).
 
 ## Prerequisites
+
 * Android studio or other Android IDE
 * Android simulator or device to run the app
 
 ## Running the app
 
-* Create Ziti Network following the [guide](https://github.com/openziti/ziti/tree/release-next/quickstart)
+* Run one of [the quickstarts](https://docs.openziti.io/docs/learn/quickstarts/network/) to create a Ziti network.
 * Create a service that is used by this app:
-  ```
-  name = ziti-weather-service
-  hostname = wttr.ziti
-  port = 80
-  
-  endpoint host = wttr.in
-  endpoint port = 80
-  endpoint protocol = tcp
-  ```
+
+    ```
+    name = ziti-weather-service
+    hostname = wttr.ziti
+    port = 80
+    
+    endpoint host = wttr.in
+    endpoint port = 80
+    endpoint protocol = tcp
+    ```
+
 * Create an identity for the device running this. You'll need one identity per device.
   You will need to configure access to the service for your new identity.
   Download enrollment JWT and copy it to the device.
