@@ -1,3 +1,3 @@
 # Security Policy
 
-We recommend your app have a security policy. Add security policy information in this file.
+Please refer to the [openziti-security repository](https://github.com/openziti/openziti-security) for details of the security policies and processes for this repository.
